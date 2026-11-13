@@ -2027,10 +2027,10 @@ void AIStrip::Creation() {
 	SetFontHandle(wRequest, fontText);
 	wRequest.Show();
 
+	wClear = CreateButton("Clear &History", IDAICLEAR);
+	wDuplicate = CreateButton("Du&plicate+Apply", IDAIDUPLICATE);
+	wSend = CreateButton("Sen&d Task", IDAISEND);
 	wConsult = CreateButton("Cons&ult", IDAICONSULT, true, IDBM_AICONSULT);
-	wSend = CreateButton("Sen&d", IDAISEND, false, IDBM_AISEND);
-	wDuplicate = CreateButton("Du&plicate && Apply", IDAIDUPLICATE, false, IDBM_AIDUPLICATE);
-	wClear = CreateButton("Clear &history", IDAICLEAR, false, IDBM_AICLEAR);
 }
 
 int AIStrip::Lines() const noexcept {
@@ -2051,14 +2051,14 @@ void AIStrip::Size() {
 	const int widthCaption = std::max(WidthControl(wStaticRequest),
 					   std::max(WidthText(fontText, localiser->Text(textFindPrompt)) + 4,
 						    WidthText(fontText, localiser->Text(textReplacePrompt)) + 4));
+	const int widthButtons = std::max(WidthControl(wClear),
+					   std::max(WidthControl(wDuplicate), WidthControl(wSend)));
 	const int checkWidth = LineArea(0).Height() - 1;
 
 	const std::vector<Interval> positions = Distribute(rcBlock, 4, {
 		widthCaption,
 		0,
-		checkWidth,
-		checkWidth,
-		checkWidth,
+		widthButtons,
 		checkWidth,
 	});
 
@@ -2066,12 +2066,15 @@ void AIStrip::Size() {
 	SetWindowPosition(wStaticRequest, positions[0], Interval(labelTop, labelTop + lineHeight - space));
 	SetWindowPosition(wRequest, positions[1], Interval(rcBlock.top, rcBlock.bottom));
 
-	const int buttonTop = rcBlock.top + (rcBlock.Height() - checkWidth) / 2;
-	const Interval verticalButton(buttonTop, buttonTop + checkWidth);
-	SetWindowPosition(wConsult, positions[2], verticalButton);
-	SetWindowPosition(wSend, positions[3], verticalButton);
-	SetWindowPosition(wDuplicate, positions[4], verticalButton);
-	SetWindowPosition(wClear, positions[5], verticalButton);
+	GUI::Rectangle rcLine = LineArea(firstLine);
+	SetWindowPosition(wClear, positions[2], Interval(rcLine.top - 1, rcLine.bottom));
+
+	rcLine = LineArea(firstLine + 1);
+	SetWindowPosition(wDuplicate, positions[2], Interval(rcLine.top - 1, rcLine.bottom));
+
+	rcLine = LineArea(firstLine + 2);
+	SetWindowPosition(wSend, positions[2], Interval(rcLine.top - 1, rcLine.bottom));
+	SetWindowPosition(wConsult, positions[3], Interval(rcLine.top, rcLine.bottom));
 
 	Redraw();
 }
@@ -2137,13 +2140,13 @@ bool AIStrip::ToolTipFor(int idButton, GUI::gui_string &text) const {
 		label = "Consult";
 		break;
 	case IDAISEND:
-		label = "Send";
+		label = "Send Task";
 		break;
 	case IDAIDUPLICATE:
-		label = "Duplicate and Apply";
+		label = "Duplicate+Apply";
 		break;
 	case IDAICLEAR:
-		label = "Clear history";
+		label = "Clear History";
 		break;
 	default:
 		return false;
