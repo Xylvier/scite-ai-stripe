@@ -91,6 +91,7 @@ BEGIN
 	MENUITEM "Find &Previous\tShift+F3",		IDM_FINDNEXTBACK
 	MENUITEM "F&ind in Files...\tCtrl+Shift+F",	IDM_FINDINFILES
 	MENUITEM "&Replace...\tCtrl+H",			IDM_REPLACE
+	MENUITEM "AI &Query...\tCtrl+Alt+Q",		IDM_AIQUERY
 	MENUITEM "Incremental &Search...\tCtrl+Alt+I",	IDM_INCSEARCH
 	MENUITEM "Fi&lter...\tCtrl+Alt+F",			IDM_FILTER
 	MENUITEM "Selection &Add Next\tCtrl+Shift+D",	IDM_SELECTIONADDNEXT
@@ -102,7 +103,7 @@ BEGIN
 	MENUITEM "&Toggle Bookmark\tCtrl+F2",		IDM_BOOKMARK_TOGGLE
 	MENUITEM "&Clear All Bookmarks",			IDM_BOOKMARK_CLEARALL
 	MENUITEM "Select All &Bookmarks",		IDM_BOOKMARK_SELECT_ALL
-END // used(15): abcefgilmnprstv // Available: dhjkoquwxyz
+END // used(16): abcefgilmnprstvq // Available: dhjkouwxyz
 
 POPUP "&View"
 BEGIN
@@ -567,6 +568,7 @@ BEGIN
 	"C", IDM_COPY,  VIRTKEY, CONTROL
 
 	"I", IDM_INCSEARCH,          VIRTKEY, CONTROL, ALT
+	"Q", IDM_AIQUERY,            VIRTKEY, CONTROL, ALT
 END
 
 IDR_CLOSEFILE BITMAP "closefile.bmp"
@@ -580,6 +582,10 @@ IDBM_AROUND BITMAP "around.bmp"
 IDBM_UP BITMAP "up.bmp"
 IDBM_FILTER BITMAP "filter.bmp"
 IDBM_CONTEXT BITMAP "context.bmp"
+IDBM_AICONSULT BITMAP "aiconsult.bmp"
+IDBM_AISEND BITMAP "aisend.bmp"
+IDBM_AIDUPLICATE BITMAP "aiduplicate.bmp"
+IDBM_AICLEAR BITMAP "aiclear.bmp"
 
 IDBM_20_WORD BITMAP "word20.bmp"
 IDBM_20_CASE BITMAP "case20.bmp"
@@ -589,6 +595,10 @@ IDBM_20_AROUND BITMAP "around20.bmp"
 IDBM_20_UP BITMAP "up20.bmp"
 IDBM_20_FILTER BITMAP "filter20.bmp"
 IDBM_20_CONTEXT BITMAP "context20.bmp"
+IDBM_20_AICONSULT BITMAP "aiconsult20.bmp"
+IDBM_20_AISEND BITMAP "aisend20.bmp"
+IDBM_20_AIDUPLICATE BITMAP "aiduplicate20.bmp"
+IDBM_20_AICLEAR BITMAP "aiclear20.bmp"
 
 IDBM_24_WORD BITMAP "word24.bmp"
 IDBM_24_CASE BITMAP "case24.bmp"
@@ -598,6 +608,10 @@ IDBM_24_AROUND BITMAP "around24.bmp"
 IDBM_24_UP BITMAP "up24.bmp"
 IDBM_24_FILTER BITMAP "filter24.bmp"
 IDBM_24_CONTEXT BITMAP "context24.bmp"
+IDBM_24_AICONSULT BITMAP "aiconsult24.bmp"
+IDBM_24_AISEND BITMAP "aisend24.bmp"
+IDBM_24_AIDUPLICATE BITMAP "aiduplicate24.bmp"
+IDBM_24_AICLEAR BITMAP "aiclear24.bmp"
 
 IDBM_32_WORD BITMAP "word32.bmp"
 IDBM_32_CASE BITMAP "case32.bmp"
@@ -607,6 +621,10 @@ IDBM_32_AROUND BITMAP "around32.bmp"
 IDBM_32_UP BITMAP "up32.bmp"
 IDBM_32_FILTER BITMAP "filter32.bmp"
 IDBM_32_CONTEXT BITMAP "context32.bmp"
+IDBM_32_AICONSULT BITMAP "aiconsult32.bmp"
+IDBM_32_AISEND BITMAP "aisend32.bmp"
+IDBM_32_AIDUPLICATE BITMAP "aiduplicate32.bmp"
+IDBM_32_AICLEAR BITMAP "aiclear32.bmp"
 
 //The embedded properties file is to allow a one file distribution of Sc1.EXE
 #ifdef STATIC_BUILD

@@ -167,8 +167,9 @@ protected:
 	FilterStrip filterStrip;
 	FindStrip findStrip;
 	ReplaceStrip replaceStrip;
+	AIStrip aiStrip;
 
-	enum { bandTool, bandTab, bandContents, bandUser, bandBackground, bandSearch, bandFind, bandReplace, bandFilter, bandStatus };
+	enum { bandTool, bandTab, bandContents, bandUser, bandBackground, bandSearch, bandFind, bandReplace, bandFilter, bandAI, bandStatus };
 	std::vector<Band> bands;
 
 	void ReadLocalization() override;
@@ -293,6 +294,7 @@ protected:
 	void Find() override;
 	void FindInFiles() override;
 	void Replace() override;
+	void AIQuery() override;
 	void FindReplace(bool replace) override;
 	void DestroyFindReplace() noexcept override;
 

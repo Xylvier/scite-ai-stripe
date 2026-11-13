@@ -201,6 +201,8 @@ bool SciTEWin::ModelessHandler(MSG *pmsg) {
 			return true;
 		if (filterStrip.KeyDown(pmsg->wParam))
 			return true;
+		if (aiStrip.KeyDown(pmsg->wParam))
+			return true;
 		if (userStrip.KeyDown(pmsg->wParam))
 			return true;
 	}
@@ -1140,6 +1142,8 @@ void SciTEWin::UIClosed() {
 		bands[SciTEWin::bandReplace].visible = false;
 	if (!filterStrip.visible)
 		bands[SciTEWin::bandFilter].visible = false;
+	if (!aiStrip.visible)
+		bands[SciTEWin::bandAI].visible = false;
 	UpdateStatusBar(false);
 	SizeSubWindows();
 	WindowSetFocus(wEditor);
@@ -1154,6 +1158,8 @@ void SciTEWin::CloseOtherFinders(int cmdID) {
 		searchStrip.CloseIfOpen();
 	if (cmdID != IDM_FILTER)
 		filterStrip.CloseIfOpen();
+	if (cmdID != IDM_AIQUERY)
+		aiStrip.CloseIfOpen();
 }
 
 void SciTEWin::FindIncrement() {
@@ -1209,7 +1215,7 @@ void SciTEWin::Find() {
 		findStrip.SetIncrementalBehaviour(props.GetInt("find.strip.incremental"));
 		findStrip.ShowStrip();
 	} else {
-		if (searchStrip.visible || replaceStrip.visible)
+		if (searchStrip.visible || replaceStrip.visible || aiStrip.visible)
 			return;
 
 		replacing = false;
@@ -1422,6 +1428,23 @@ void SciTEWin::FindInFiles() {
 	wFindInFiles.Show();
 }
 
+void SciTEWin::AIQuery() {
+	if (wFindReplace.Created()) {
+		return;
+	}
+	SelectionIntoFind(false); // don't strip EOL at end of selection
+
+	CloseOtherFinders(IDM_AIQUERY);
+	if (filterState) {
+		wEditor.FoldAll(SA::FoldAction::Expand);
+	}
+	aiStrip.visible = true;
+	SizeSubWindows();
+	aiStrip.SetIncrementalBehaviour(props.GetInt("replace.strip.incremental"));
+	aiStrip.ShowStrip();
+	havefound = false;
+}
+
 void SciTEWin::Replace() {
 	if (wFindReplace.Created()) {
 		if (replacing) {
@@ -1446,7 +1469,7 @@ void SciTEWin::Replace() {
 		replaceStrip.ShowStrip();
 		havefound = false;
 	} else {
-		if (searchStrip.visible || findStrip.visible)
+		if (searchStrip.visible || findStrip.visible || aiStrip.visible)
 			return;
 
 		replacing = true;

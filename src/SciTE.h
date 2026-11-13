@@ -110,6 +110,7 @@
 #define IDM_SELECTIONADDNEXT  257
 #define IDM_SELECTIONADDEACH  258
 #define IDM_FILTER 		259
+#define IDM_AIQUERY		264
 
 #define IDC_INCFINDTEXT     253
 #define IDC_INCFINDBTNOK	254
@@ -264,6 +265,13 @@
 #define IDFINDSTYLE			251
 #define IDCONVERT			252
 
+// AI strip controls. Kept away from the find/replace dialog IDs.
+#define IDAIREQUEST			270
+#define IDAICONSULT			271
+#define IDAISEND			272
+#define IDAIDUPLICATE		273
+#define IDAICLEAR			274
+
 #define IDPARAMSTART		300
 
 // Dialog IDs
@@ -288,6 +296,10 @@
 #define IDBM_UP 106
 #define IDBM_FILTER 108
 #define IDBM_CONTEXT 109
+#define IDBM_AICONSULT 110
+#define IDBM_AISEND 111
+#define IDBM_AIDUPLICATE 112
+#define IDBM_AICLEAR 113
 
 #define IDBM_20_WORD 201
 #define IDBM_20_CASE 202
@@ -297,6 +309,10 @@
 #define IDBM_20_UP 206
 #define IDBM_20_FILTER 208
 #define IDBM_20_CONTEXT 209
+#define IDBM_20_AICONSULT 210
+#define IDBM_20_AISEND 211
+#define IDBM_20_AIDUPLICATE 212
+#define IDBM_20_AICLEAR 213
 
 #define IDBM_24_WORD 301
 #define IDBM_24_CASE 302
@@ -306,6 +322,10 @@
 #define IDBM_24_UP 306
 #define IDBM_24_FILTER 308
 #define IDBM_24_CONTEXT 309
+#define IDBM_24_AICONSULT 310
+#define IDBM_24_AISEND 311
+#define IDBM_24_AIDUPLICATE 312
+#define IDBM_24_AICLEAR 313
 
 #define IDBM_32_WORD 401
 #define IDBM_32_CASE 402
@@ -315,5 +335,9 @@
 #define IDBM_32_UP 406
 #define IDBM_32_FILTER 408
 #define IDBM_32_CONTEXT 409
+#define IDBM_32_AICONSULT 410
+#define IDBM_32_AISEND 411
+#define IDBM_32_AIDUPLICATE 412
+#define IDBM_32_AICLEAR 413
 
 #endif

@@ -311,62 +311,61 @@ GUI::Window Strip::CreateText(const char *text) {
 	return w;
 }
 
-GUI::Window Strip::CreateButton(const char *text, size_t ident, bool check) {
+GUI::Window Strip::CreateButton(const char *text, size_t ident, bool check, int bitmapResource) {
 	GUI::gui_string localised = localiser->Text(text);
-	int width = WidthText(fontText, localised);
-	int height = baseHeightButton + (2 * ::GetSystemMetrics(SM_CYEDGE));
-	if (check) {
-		width += 6;
-		const int checkSize = ::GetSystemMetrics(SM_CXMENUCHECK);
-		width += checkSize;
-	} else {
-		width += 2 * ::GetSystemMetrics(SM_CXEDGE);	// Allow for 3D borders
-		width += 2 * WidthText(fontText, GUI_TEXT(" "));	// Allow a bit of space
-	}
-
 	const int scaleIndex = ScaleIndex(scale);
 	const int bmpDimension = buttonImageSize[scaleIndex];
 	const int resDifference = scaleIndex * 100;
+	const bool icon = check || (bitmapResource != 0);
 
-	if (check) {
+	int width = 0;
+	int height = baseHeightButton + (2 * ::GetSystemMetrics(SM_CYEDGE));
+	if (icon) {
 		height = bmpDimension + (3 * 2);
 		width = bmpDimension + (3 * 2);
+	} else {
+		width = WidthText(fontText, localised);
+		width += 2 * ::GetSystemMetrics(SM_CXEDGE);	// Allow for 3D borders
+		width += 2 * WidthText(fontText, GUI_TEXT(" "));	// Allow a bit of space
 	}
+	const DWORD buttonStyle = check ? (BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP) :
+				       (bitmapResource ? (BS_PUSHBUTTON | BS_BITMAP) : BS_PUSHBUTTON);
 	GUI::Window w;
 	w.SetID(::CreateWindowExW(0, WC_BUTTONW, localised.c_str(),
-				 WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS |
-				 (check ? (BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP) : BS_PUSHBUTTON),
+				 WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | buttonStyle,
 				 2, 2, width, height,
 				 Hwnd(), HmenuID(ident), ::ApplicationInstance(), nullptr));
-	if (check) {
-		int resNum = IDBM_WORD;
-		switch (ident) {
-		case IDWHOLEWORD:
-			resNum = IDBM_WORD;
-			break;
-		case IDMATCHCASE:
-			resNum = IDBM_CASE;
-			break;
-		case IDREGEXP:
-			resNum = IDBM_REGEX;
-			break;
-		case IDUNSLASH:
-			resNum = IDBM_BACKSLASH;
-			break;
-		case IDWRAP:
-			resNum = IDBM_AROUND;
-			break;
-		case IDDIRECTIONUP:
-			resNum = IDBM_UP;
-			break;
-		case IDFILTERSTATE:
-			resNum = IDBM_FILTER;
-			break;
-		case IDCONTEXTVISIBLE:
-			resNum = IDBM_CONTEXT;
-			break;
-		default:
-			break;
+	if (icon) {
+		int resNum = bitmapResource ? bitmapResource : IDBM_WORD;
+		if (!bitmapResource) {
+			switch (ident) {
+			case IDWHOLEWORD:
+				resNum = IDBM_WORD;
+				break;
+			case IDMATCHCASE:
+				resNum = IDBM_CASE;
+				break;
+			case IDREGEXP:
+				resNum = IDBM_REGEX;
+				break;
+			case IDUNSLASH:
+				resNum = IDBM_BACKSLASH;
+				break;
+			case IDWRAP:
+				resNum = IDBM_AROUND;
+				break;
+			case IDDIRECTIONUP:
+				resNum = IDBM_UP;
+				break;
+			case IDFILTERSTATE:
+				resNum = IDBM_FILTER;
+				break;
+			case IDCONTEXTVISIBLE:
+				resNum = IDBM_CONTEXT;
+				break;
+			default:
+				break;
+			}
 		}
 
 		if (!versionComctl) {
@@ -382,7 +381,7 @@ GUI::Window Strip::CreateButton(const char *text, size_t ident, bool check) {
 	}
 	SetFontHandle(w, fontText);
 	w.Show();
-	if (!check) {
+	if (!icon) {
 		const SIZE sz = SizeButton(w);
 		if (sz.cx > 0) {
 			const GUI::Rectangle rc(0, 0, sz.cx + (2 * WidthText(fontText, GUI_TEXT(" "))), sz.cy);
@@ -626,7 +625,8 @@ LRESULT Strip::EditColour(HWND hwnd, HDC hdc) noexcept {
 
 LRESULT Strip::CustomDraw(NMHDR *pnmh) noexcept {
 	const int btnStyle = GetWindowStyle(pnmh->hwndFrom);
-	if ((btnStyle & BS_AUTOCHECKBOX) != BS_AUTOCHECKBOX) {
+	// Text buttons keep the system face. Icon buttons carry BS_BITMAP.
+	if ((btnStyle & BS_BITMAP) != BS_BITMAP) {
 		return CDRF_DODEFAULT;
 	}
 #ifndef DISABLE_THEMES
@@ -640,7 +640,8 @@ LRESULT Strip::CustomDraw(NMHDR *pnmh) noexcept {
 		if (!hThemeButton) {
 			return CDRF_DODEFAULT;
 		}
-		const bool checked = Button_GetCheck(pnmh->hwndFrom) == BST_CHECKED;
+		const bool checked = ((btnStyle & BS_AUTOCHECKBOX) == BS_AUTOCHECKBOX) &&
+				     (Button_GetCheck(pnmh->hwndFrom) == BST_CHECKED);
 
 		int buttonAppearence = checked ? TS_CHECKED : TS_NORMAL;
 		if (pcd->uItemState & CDIS_SELECTED)
@@ -792,9 +793,17 @@ LRESULT Strip::WndProc(UINT iMessage, WPARAM wParam, LPARAM lParam) {
 				const int idButton = static_cast<int>(
 							     (pnmtdi->uFlags & TTF_IDISHWND) ?
 							     ::GetDlgCtrlID(reinterpret_cast<HWND>(pnmtdi->hdr.idFrom)) : pnmtdi->hdr.idFrom);
+				bool matched = false;
 				for (const SearchOption &so : toggles) {
 					if (so.id == idButton) {
 						GUI::gui_string localised = localiser->Text(so.label);
+						StringCopy(pnmtdi->szText, localised.c_str());
+						matched = true;
+					}
+				}
+				if (!matched) {
+					GUI::gui_string localised;
+					if (ToolTipFor(idButton, localised)) {
 						StringCopy(pnmtdi->szText, localised.c_str());
 					}
 				}
@@ -821,6 +830,10 @@ void Strip::AddToPopUp(const GUI::Menu &popup, const char *label, int cmd, bool 
 }
 
 void Strip::ShowPopup() const {
+}
+
+bool Strip::ToolTipFor(int, GUI::gui_string &) const {
+	return false;
 }
 
 void Strip::CloseIfOpen() {
@@ -1999,4 +2012,142 @@ std::string UserStrip::GetValue(int control) {
 		return ControlText(ctl->w);
 	}
 	return "";
+}
+
+void AIStrip::Creation() {
+	ReplaceStrip::Creation();
+
+	wStaticRequest = CreateText("As&k:");
+
+	wRequest = ::CreateWindowExW(WS_EX_CLIENTEDGE, WC_EDITW, L"",
+			WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VSCROLL |
+			ES_MULTILINE | ES_WANTRETURN | ES_AUTOVSCROLL,
+			2, 2, widthEdit, lineHeight * requestLines,
+			Hwnd(), HmenuID(IDAIREQUEST), ::ApplicationInstance(), nullptr);
+	SetFontHandle(wRequest, fontText);
+	wRequest.Show();
+
+	wConsult = CreateButton("Cons&ult", IDAICONSULT, true, IDBM_AICONSULT);
+	wSend = CreateButton("Sen&d", IDAISEND, false, IDBM_AISEND);
+	wDuplicate = CreateButton("Du&plicate && Apply", IDAIDUPLICATE, false, IDBM_AIDUPLICATE);
+	wClear = CreateButton("Clear &history", IDAICLEAR, false, IDBM_AICLEAR);
+}
+
+int AIStrip::Lines() const noexcept {
+	return ReplaceStrip::Lines() + requestLines;
+}
+
+void AIStrip::Size() {
+	if (!visible)
+		return;
+	ReplaceStrip::Size();
+
+	const int firstLine = ReplaceStrip::Lines();
+	const GUI::Rectangle rcTop = LineArea(firstLine);
+	const GUI::Rectangle rcBottom = LineArea(firstLine + requestLines - 1);
+	GUI::Rectangle rcBlock(rcTop.left, rcTop.top, rcTop.right, rcBottom.bottom);
+	rcBlock.left += space;
+
+	const int widthCaption = std::max(WidthControl(wStaticRequest),
+					   std::max(WidthText(fontText, localiser->Text(textFindPrompt)) + 4,
+						    WidthText(fontText, localiser->Text(textReplacePrompt)) + 4));
+	const int checkWidth = LineArea(0).Height() - 1;
+
+	const std::vector<Interval> positions = Distribute(rcBlock, 4, {
+		widthCaption,
+		0,
+		checkWidth,
+		checkWidth,
+		checkWidth,
+		checkWidth,
+	});
+
+	const int labelTop = rcBlock.top + 3;
+	SetWindowPosition(wStaticRequest, positions[0], Interval(labelTop, labelTop + lineHeight - space));
+	SetWindowPosition(wRequest, positions[1], Interval(rcBlock.top, rcBlock.bottom));
+
+	const int buttonTop = rcBlock.top + (rcBlock.Height() - checkWidth) / 2;
+	const Interval verticalButton(buttonTop, buttonTop + checkWidth);
+	SetWindowPosition(wConsult, positions[2], verticalButton);
+	SetWindowPosition(wSend, positions[3], verticalButton);
+	SetWindowPosition(wDuplicate, positions[4], verticalButton);
+	SetWindowPosition(wClear, positions[5], verticalButton);
+
+	Redraw();
+}
+
+void AIStrip::ShowStrip() {
+	ReplaceStrip::ShowStrip();
+	CheckButton(wConsult, consult);
+}
+
+bool AIStrip::KeyDown(WPARAM key) {
+	if (!visible)
+		return false;
+	if (key == VK_RETURN) {
+		const HWND focus = ::GetFocus();
+		// Enter in the request field starts a new line, so this strip must not consume it.
+		if (IsSameOrChild(wRequest, focus))
+			return false;
+		if (IsSameOrChild(wSend, focus) || IsSameOrChild(wDuplicate, focus) ||
+				IsSameOrChild(wClear, focus)) {
+			::SendMessage(focus, BM_CLICK, 0, 0);
+			return true;
+		}
+	}
+	return ReplaceStrip::KeyDown(key);
+}
+
+bool AIStrip::Command(WPARAM wParam) {
+	if (entered)
+		return false;
+	switch (ControlIDOfWParam(wParam)) {
+	case IDAICONSULT:
+		consult = Button_GetCheck(HwndOf(wConsult)) == BST_CHECKED;
+		return true;
+
+	case IDAISEND: {
+			const std::string request = ControlText(wRequest);
+			if (!request.empty()) {
+				history.push_back(Turn{request, {}});
+				while (history.size() > historyLimit) {
+					history.pop_front();
+				}
+			}
+			return true;
+		}
+
+	case IDAIDUPLICATE:
+		// The duplicate tab is created when a change can be applied.
+		return true;
+
+	case IDAICLEAR:
+		history.clear();
+		return true;
+
+	default:
+		return ReplaceStrip::Command(wParam);
+	}
+}
+
+bool AIStrip::ToolTipFor(int idButton, GUI::gui_string &text) const {
+	const char *label = nullptr;
+	switch (idButton) {
+	case IDAICONSULT:
+		label = "Consult";
+		break;
+	case IDAISEND:
+		label = "Send";
+		break;
+	case IDAIDUPLICATE:
+		label = "Duplicate and Apply";
+		break;
+	case IDAICLEAR:
+		label = "Clear history";
+		break;
+	default:
+		return false;
+	}
+	text = localiser->Text(label);
+	return true;
 }

@@ -725,6 +725,8 @@ protected:
 	int FilterSearch();
 	virtual void FindInFiles() = 0;
 	virtual void Replace() = 0;
+	// Windows shows the AI strip. Other platforms leave this empty until they grow the same UI.
+	virtual void AIQuery() {}
 	void ReplaceOnce(bool showWarnings=true) override;
 	intptr_t DoReplaceAll(bool inSelection); // returns number of replacements or negative value if error
 	intptr_t ReplaceAll(bool inSelection) override;

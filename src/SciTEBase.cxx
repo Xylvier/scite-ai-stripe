@@ -3353,6 +3353,10 @@ void SciTEBase::MenuCommand(int cmdID, int source) {
 		Replace();
 		break;
 
+	case IDM_AIQUERY:
+		AIQuery();
+		break;
+
 	case IDM_GOTO:
 		GoLineDialog();
 		break;

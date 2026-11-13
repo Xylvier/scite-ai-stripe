@@ -8,6 +8,9 @@
 #ifndef STRIPS_H
 #define STRIPS_H
 
+#include <deque>
+#include <string>
+
 void ComboBoxAppend(HWND hWnd, const GUI::gui_string &gs) noexcept;
 
 class BaseWin : public GUI::Window {
@@ -43,7 +46,7 @@ protected:
 	int lineHeight = lineHeightDefault;
 
 	[[nodiscard]] GUI::Window CreateText(const char *text);
-	[[nodiscard]] GUI::Window CreateButton(const char *text, size_t ident, bool check=false);
+	[[nodiscard]] GUI::Window CreateButton(const char *text, size_t ident, bool check=false, int bitmapResource=0);
 	void Tab(bool forwards) noexcept;
 	virtual void Creation();
 	virtual void Destruction() noexcept;
@@ -63,6 +66,7 @@ protected:
 	void SetTheme() noexcept;
 	virtual LRESULT EditColour(HWND hwnd, HDC hdc) noexcept;
 	virtual LRESULT CustomDraw(NMHDR *pnmh) noexcept;
+	virtual bool ToolTipFor(int idButton, GUI::gui_string &text) const;
 	LRESULT WndProc(UINT iMessage, WPARAM wParam, LPARAM lParam) override;
 	void AddToPopUp(const GUI::Menu &popup, const char *label, int cmd, bool checked) const;
 	virtual void ShowPopup() const;
@@ -196,6 +200,31 @@ public:
 	void Paint(HDC hDC) const noexcept override;
 	void CheckButtons() noexcept;
 	void ShowStrip();
+};
+
+class AIStrip : public ReplaceStrip {
+	GUI::Window wStaticRequest;
+	GUI::Window wRequest;
+	GUI::Window wConsult;
+	GUI::Window wSend;
+	GUI::Window wDuplicate;
+	GUI::Window wClear;
+	bool consult = false;
+	static constexpr size_t historyLimit = 8;
+	static constexpr int requestLines = 3;
+	struct Turn {
+		std::string request;
+		std::string answer;
+	};
+	std::deque<Turn> history;
+public:
+	void Creation() override;
+	[[nodiscard]] int Lines() const noexcept override;
+	void Size() override;
+	void ShowStrip();
+	bool KeyDown(WPARAM key) override;
+	bool Command(WPARAM wParam) override;
+	bool ToolTipFor(int idButton, GUI::gui_string &text) const override;
 };
 
 class FilterStrip : public FindReplaceStrip {

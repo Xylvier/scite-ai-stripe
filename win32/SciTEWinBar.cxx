@@ -485,6 +485,7 @@ void SciTEWin::SizeSubWindows() {
 	bands[bandFind].visible = findStrip.visible;
 	bands[bandReplace].visible = replaceStrip.visible;
 	bands[bandFilter].visible = filterStrip.visible;
+	bands[bandAI].visible = aiStrip.visible;
 
 	const GUI::Rectangle rcSB = wStatusBar.GetPosition();
 	bands[bandStatus].height = rcSB.Height() - 2;	// -2 hides a top border
@@ -1055,6 +1056,7 @@ void SciTEWin::Creation() {
 	CreateStrip(L"FindStrip", &findStrip);
 	CreateStrip(L"ReplaceStrip", &replaceStrip);
 	CreateStrip(L"FilterStrip", &filterStrip);
+	CreateStrip(L"AIStrip", &aiStrip);
 
 	wStatusBar = ::CreateWindowExW(
 			     0,
@@ -1083,6 +1085,7 @@ void SciTEWin::Creation() {
 	bands.emplace_back(true, findStrip.Height(), false, findStrip);
 	bands.emplace_back(true, replaceStrip.Height(), false, replaceStrip);
 	bands.emplace_back(true, filterStrip.Height(), false, filterStrip);
+	bands.emplace_back(true, aiStrip.Height(), false, aiStrip);
 	bands.emplace_back(true, heightStatus, false, wStatusBar);
 
 #ifndef NO_LUA
